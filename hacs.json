@@ -1,0 +1,7 @@
+{
+  "name": "Mimick",
+  "content_in_root": false,
+  "filename": "mimick",
+  "render_readme": true,
+  "homeassistant": "2024.1.0"
+}
