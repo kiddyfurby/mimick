@@ -1,0 +1,39 @@
+apply:
+  name: Apply
+  description: Immediately calculates and applies mimick to configured lights.
+  fields:
+    entity_id:
+      name: Target Lights
+      description: Specific light entities to adapt. If omitted, all lights in all groups are adapted.
+      required: false
+      selector:
+        entity:
+          domain: light
+          multiple: true
+    force:
+      name: Force Adaptation
+      description: Force update even if the light was manually adjusted.
+      required: false
+      default: false
+      selector:
+        boolean:
+
+set_manual_control:
+  name: Set Manual Control
+  description: Mark or unmark a light as manually controlled (pausing or resuming adaptation).
+  fields:
+    entity_id:
+      name: Target Lights
+      description: The light entities to set manual control on.
+      required: true
+      selector:
+        entity:
+          domain: light
+          multiple: true
+    manual_control:
+      name: Manual Control Active
+      description: Whether manual control is active. True pauses adaptation, False resumes adaptation.
+      required: true
+      default: true
+      selector:
+        boolean:
