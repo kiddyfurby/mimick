@@ -1,0 +1,81 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Create Mimick Group",
+        "description": "Configure an mimick group with solar-based brightness and color temperature curves.",
+        "data": {
+          "name": "Group Name",
+          "lights": "Lights",
+          "min_brightness": "Minimum Brightness (%)",
+          "max_brightness": "Maximum Brightness (%)",
+          "min_kelvin": "Minimum Color Temperature (Kelvin)",
+          "max_kelvin": "Maximum Color Temperature (Kelvin)",
+          "adapt_brightness": "Adapt Brightness",
+          "adapt_color": "Adapt Color Temperature",
+          "transition": "Transition Duration (seconds)",
+          "interval": "Update Interval (seconds)",
+          "sleep_entity": "Sleep Mode Entity (Optional)",
+          "sleep_brightness": "Sleep Mode Brightness (%)",
+          "sleep_kelvin": "Sleep Mode Color Temperature (Kelvin)",
+          "weather_entity": "Weather / Cloud Entity (Optional)",
+          "weather_influence": "Daytime Weather Modulation Influence (%)"
+        }
+      }
+    },
+    "error": {
+      "no_lights_selected": "Please select at least one light for this group."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Mimick Options",
+        "menu_options": {
+          "group_settings": "Edit Group Settings",
+          "light_overrides": "Configure Light Overrides"
+        }
+      },
+      "group_settings": {
+        "title": "Group Settings",
+        "description": "Adjust group-wide default settings.",
+        "data": {
+          "lights": "Lights",
+          "min_brightness": "Minimum Brightness (%)",
+          "max_brightness": "Maximum Brightness (%)",
+          "min_kelvin": "Minimum Color Temperature (Kelvin)",
+          "max_kelvin": "Maximum Color Temperature (Kelvin)",
+          "adapt_brightness": "Adapt Brightness",
+          "adapt_color": "Adapt Color Temperature",
+          "transition": "Transition Duration (seconds)",
+          "interval": "Update Interval (seconds)",
+          "sleep_entity": "Sleep Mode Entity (Optional)",
+          "sleep_brightness": "Sleep Mode Brightness (%)",
+          "sleep_kelvin": "Sleep Mode Color Temperature (Kelvin)",
+          "weather_entity": "Weather / Cloud Entity (Optional)",
+          "weather_influence": "Daytime Weather Modulation Influence (%)"
+        }
+      },
+      "light_overrides": {
+        "title": "Select Light to Override",
+        "description": "Choose a light to customize its individual brightness/color temperature ranges or adaptation flags.",
+        "data": {
+          "selected_light": "Light"
+        }
+      },
+      "light_override_edit": {
+        "title": "Custom Overrides for {light_id}",
+        "description": "Override group defaults for this specific light. Ideal for lights managed by Lightener or fixtures with distinct physical limits.",
+        "data": {
+          "override_enabled": "Enable Custom Override for this Light",
+          "adapt_brightness": "Adapt Brightness",
+          "adapt_color": "Adapt Color Temperature",
+          "min_brightness": "Minimum Brightness (%)",
+          "max_brightness": "Maximum Brightness (%)",
+          "min_kelvin": "Minimum Color Temperature (Kelvin)",
+          "max_kelvin": "Maximum Color Temperature (Kelvin)"
+        }
+      }
+    }
+  }
+}
