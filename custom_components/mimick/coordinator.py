@@ -32,6 +32,7 @@ from .const import (
     ATTR_OVERRIDE_ENABLED,
     CONF_ADAPT_BRIGHTNESS,
     CONF_ADAPT_COLOR,
+    CONF_DEBUG_LOGGING,
     CONF_INTERVAL,
     CONF_LIGHT_OVERRIDES,
     CONF_LIGHTS,
@@ -51,6 +52,7 @@ from .const import (
     CONF_WEATHER_INFLUENCE,
     DEFAULT_ADAPT_BRIGHTNESS,
     DEFAULT_ADAPT_COLOR,
+    DEFAULT_DEBUG_LOGGING,
     DEFAULT_INTERVAL,
     DEFAULT_MANUAL_CONTROL_TIMEOUT,
     DEFAULT_MAX_BRIGHTNESS,
@@ -92,6 +94,7 @@ class MimickCoordinator:
         self._adapt_brightness_enabled: bool = True
         self._adapt_color_enabled: bool = True
         self._sleep_mode: bool = False
+        self._debug_logging: bool = False
 
         # Target calculation cache
         self._last_solar_factor: float = 0.0
@@ -130,6 +133,7 @@ class MimickCoordinator:
 
         self.manual_control_timeout: int = cfg.get(CONF_MANUAL_CONTROL_TIMEOUT, DEFAULT_MANUAL_CONTROL_TIMEOUT)
         self.light_overrides: dict[str, dict[str, Any]] = cfg.get(CONF_LIGHT_OVERRIDES, {})
+        self._debug_logging = bool(cfg.get(CONF_DEBUG_LOGGING, DEFAULT_DEBUG_LOGGING))
 
     def update_options(self, options: dict[str, Any]) -> None:
         """Update options and reload settings."""
@@ -196,6 +200,127 @@ class MimickCoordinator:
         """Return the current sun elevation."""
         return self._last_elevation
 
+    @property
+    def debug_logging(self) -> bool:
+        """Return True if algorithm logging is enabled."""
+        return self._debug_logging
+
+    def _is_logging_enabled(self) -> bool:
+        """Return True if algorithm logging is active via toggle or HA debug logger."""
+        return self._debug_logging or _LOGGER.isEnabledFor(logging.DEBUG)
+
+    def _log(self, msg: str, *args: Any) -> None:
+        """Log algorithm event at INFO if toggle is on, otherwise DEBUG."""
+        if self._debug_logging:
+            _LOGGER.info(msg, *args)
+        else:
+            _LOGGER.debug(msg, *args)
+
+    def _log_light_algo(
+        self,
+        entity_id: str,
+        trigger: str,
+        state: State | None,
+        settings: dict[str, Any],
+        values: dict[str, Any],
+        sun_rising: bool,
+        decision: str,
+        adapt_b_allowed: bool = False,
+        adapt_c_allowed: bool = False,
+        service_data: dict[str, Any] | None = None,
+    ) -> None:
+        """Log the full algorithm inputs and outputs for a single light."""
+        if not self._is_logging_enabled():
+            return
+
+        override_cfg = self.light_overrides.get(entity_id, {})
+        has_override = bool(override_cfg.get(ATTR_OVERRIDE_ENABLED, False))
+
+        light_state_str = state.state if state else "missing"
+        curr_b = state.attributes.get(ATTR_BRIGHTNESS) if state else None
+        curr_ct = state.attributes.get(ATTR_COLOR_TEMP_KELVIN) if state else None
+
+        b_manual = self.is_manual_controlled(entity_id, "brightness")
+        c_manual = self.is_manual_controlled(entity_id, "color")
+        b_ahead = self._manual_brightness_ahead.get(entity_id, False)
+        c_ahead = self._manual_color_ahead.get(entity_id, False)
+
+        self._log(
+            "Mimick '%s' [%s] (trigger=%s) | "
+            "INPUT: state=%s, current=(b=%s, ct=%sK), "
+            "sun=(elev=%.2f°, range=[%.1f°, %.1f°], rising=%s), "
+            "weather=(entity=%s, clarity=%.2f, influence=%d%%), "
+            "settings=(override=%s, adapt_b=%s, adapt_c=%s, b_range=[%d%%, %d%%], ct_range=[%dK, %dK], "
+            "sleep=%s[b=%d%%, ct=%dK]), "
+            "manual=(b=%s[ahead=%s], c=%s[ahead=%s]) | "
+            "OUTPUT: factors=(b=%.4f, c=%.4f), "
+            "targets=(b=%d%% [%d/255], ct=%dK [%d mireds]), "
+            "decision=%s (allow_b=%s, allow_c=%s), service_data=%s",
+            self.name,
+            entity_id,
+            trigger,
+            light_state_str,
+            curr_b,
+            curr_ct,
+            self._last_elevation,
+            self.sun_elevation_min,
+            self.sun_elevation_max,
+            sun_rising,
+            self.weather_entity,
+            self.weather_clarity,
+            self.weather_influence,
+            has_override,
+            settings["adapt_brightness"] and self._adapt_brightness_enabled,
+            settings["adapt_color"] and self._adapt_color_enabled,
+            settings["min_brightness"],
+            settings["max_brightness"],
+            settings["min_kelvin"],
+            settings["max_kelvin"],
+            values["is_sleep"],
+            self.sleep_brightness,
+            self.sleep_kelvin,
+            b_manual,
+            b_ahead,
+            c_manual,
+            c_ahead,
+            values["solar_factor"],
+            values["solar_factor_color"],
+            values["brightness_pct"],
+            values["brightness_255"],
+            values["kelvin"],
+            values["mireds"],
+            decision,
+            adapt_b_allowed,
+            adapt_c_allowed,
+            service_data,
+        )
+
+    def log_all_lights_snapshot(self, trigger: str = "snapshot") -> None:
+        """Log current algorithm input/output for all lights in the group."""
+        if not self._is_logging_enabled():
+            return
+        sun_rising = is_sun_rising(self.hass)
+        for entity_id in self.lights:
+            state = self.hass.states.get(entity_id)
+            settings = self.get_light_settings(entity_id)
+            values = self.get_adaptive_values_for_light(entity_id)
+            adapt_b = settings["adapt_brightness"] and self._adapt_brightness_enabled
+            adapt_c = settings["adapt_color"] and self._adapt_color_enabled
+            adapt_b_allowed = adapt_b and not self.is_manual_controlled(entity_id, "brightness")
+            adapt_c_allowed = adapt_c and not self.is_manual_controlled(entity_id, "color")
+            self._log_light_algo(
+                entity_id=entity_id,
+                trigger=trigger,
+                state=state,
+                settings=settings,
+                values=values,
+                sun_rising=sun_rising,
+                decision="snapshot",
+                adapt_b_allowed=adapt_b_allowed,
+                adapt_c_allowed=adapt_c_allowed,
+                service_data=None,
+            )
+
     def set_enabled(self, enabled: bool) -> None:
         """Enable or disable adaptation."""
         self._enabled = enabled
@@ -218,6 +343,18 @@ class MimickCoordinator:
         self._sleep_mode = sleep
         self.async_update_listeners()
         self.hass.async_create_task(self.async_adapt_all(force=True))
+
+    def set_debug_logging(self, enabled: bool) -> None:
+        """Enable or disable algorithm input/output logging."""
+        self._debug_logging = enabled
+        self.async_update_listeners()
+        _LOGGER.info(
+            "Mimick '%s': Algorithm input/output logging %s",
+            self.name,
+            "enabled" if enabled else "disabled",
+        )
+        if enabled:
+            self.log_all_lights_snapshot(trigger="logging_enabled")
 
     def get_light_settings(self, entity_id: str) -> dict[str, Any]:
         """Resolve specific settings for a light, cascading from light overrides to group defaults."""
@@ -413,10 +550,11 @@ class MimickCoordinator:
                 is_ahead = (not sun_rising and new_b < target_b) or (sun_rising and new_b > target_b)
                 self._manual_control_brightness[entity_id] = dt_util.utcnow()
                 self._manual_brightness_ahead[entity_id] = is_ahead
-                _LOGGER.debug(
-                    "Mimick '%s': light '%s' brightness set to %s (target=%s, rising=%s, is_ahead=%s)",
+                self._log(
+                    "Mimick '%s' [%s]: manual brightness change detected (old=%s -> new=%s, target=%s, rising=%s, is_ahead=%s)",
                     self.name,
                     entity_id,
+                    old_b,
                     new_b,
                     target_b,
                     sun_rising,
@@ -430,10 +568,11 @@ class MimickCoordinator:
                 is_ahead = (not sun_rising and new_ct < target_ct) or (sun_rising and new_ct > target_ct)
                 self._manual_control_color[entity_id] = dt_util.utcnow()
                 self._manual_color_ahead[entity_id] = is_ahead
-                _LOGGER.debug(
-                    "Mimick '%s': light '%s' color set to %sK (target=%sK, rising=%s, is_ahead=%s)",
+                self._log(
+                    "Mimick '%s' [%s]: manual color change detected (old=%sK -> new=%sK, target=%sK, rising=%s, is_ahead=%s)",
                     self.name,
                     entity_id,
+                    old_ct,
                     new_ct,
                     target_ct,
                     sun_rising,
@@ -450,22 +589,42 @@ class MimickCoordinator:
         if not self._enabled:
             return
 
+        trigger = "turn_on" if is_turn_on else ("force" if force else "periodic")
         state = self.hass.states.get(entity_id)
+        settings = self.get_light_settings(entity_id)
+        values = self.get_adaptive_values_for_light(entity_id)
+        sun_rising = is_sun_rising(self.hass)
+
         if not state or state.state != "on":
+            self._log_light_algo(
+                entity_id=entity_id,
+                trigger=trigger,
+                state=state,
+                settings=settings,
+                values=values,
+                sun_rising=sun_rising,
+                decision="skipped_light_off",
+            )
             return
 
-        settings = self.get_light_settings(entity_id)
         adapt_b = settings["adapt_brightness"] and self._adapt_brightness_enabled
         adapt_c = settings["adapt_color"] and self._adapt_color_enabled
 
         if not adapt_b and not adapt_c:
+            self._log_light_algo(
+                entity_id=entity_id,
+                trigger=trigger,
+                state=state,
+                settings=settings,
+                values=values,
+                sun_rising=sun_rising,
+                decision="skipped_adaptation_disabled",
+            )
             return
 
-        values = self.get_adaptive_values_for_light(entity_id)
         target_brightness = values["brightness_255"]
         target_kelvin = values["kelvin"]
 
-        sun_rising = is_sun_rising(self.hass)
         user_b = state.attributes.get(ATTR_BRIGHTNESS)
         user_ct = state.attributes.get(ATTR_COLOR_TEMP_KELVIN)
 
@@ -525,6 +684,17 @@ class MimickCoordinator:
         adapt_brightness_allowed = adapt_b and (force or is_turn_on or not self.is_manual_controlled(entity_id, "brightness"))
 
         if not adapt_color_allowed and not adapt_brightness_allowed:
+            self._log_light_algo(
+                entity_id=entity_id,
+                trigger=trigger,
+                state=state,
+                settings=settings,
+                values=values,
+                sun_rising=sun_rising,
+                decision="skipped_manual_control",
+                adapt_b_allowed=adapt_brightness_allowed,
+                adapt_c_allowed=adapt_color_allowed,
+            )
             return
 
         service_data: dict[str, Any] = {"entity_id": entity_id}
@@ -545,6 +715,17 @@ class MimickCoordinator:
                 needs_update = True
 
         if not needs_update:
+            self._log_light_algo(
+                entity_id=entity_id,
+                trigger=trigger,
+                state=state,
+                settings=settings,
+                values=values,
+                sun_rising=sun_rising,
+                decision="no_change_within_threshold",
+                adapt_b_allowed=adapt_brightness_allowed,
+                adapt_c_allowed=adapt_color_allowed,
+            )
             return
 
         # Set transition: short 0.5s for turn-on (clean and flash-free), or gentle group transition for periodic
@@ -552,6 +733,19 @@ class MimickCoordinator:
             service_data[ATTR_TRANSITION] = 0.5
         else:
             service_data[ATTR_TRANSITION] = self.transition
+
+        self._log_light_algo(
+            entity_id=entity_id,
+            trigger=trigger,
+            state=state,
+            settings=settings,
+            values=values,
+            sun_rising=sun_rising,
+            decision="applied",
+            adapt_b_allowed=adapt_brightness_allowed,
+            adapt_c_allowed=adapt_color_allowed,
+            service_data=service_data,
+        )
 
         call_context = Context()
         self._our_contexts.add(call_context.id)
@@ -587,6 +781,19 @@ class MimickCoordinator:
                     self.async_adapt_light(entity_id, is_turn_on=False, force=force)
                 )
                 self._adaptation_tasks[entity_id] = task
+            elif self._is_logging_enabled():
+                settings = self.get_light_settings(entity_id)
+                values = self.get_adaptive_values_for_light(entity_id)
+                sun_rising = is_sun_rising(self.hass)
+                self._log_light_algo(
+                    entity_id=entity_id,
+                    trigger="force" if force else "periodic",
+                    state=state,
+                    settings=settings,
+                    values=values,
+                    sun_rising=sun_rising,
+                    decision="skipped_light_off",
+                )
 
         self.async_update_listeners()
 

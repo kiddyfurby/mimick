@@ -7,6 +7,7 @@ from typing import Any
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
@@ -36,6 +37,7 @@ async def async_setup_entry(
             MimickAdaptBrightnessSwitch(coordinator, entry),
             MimickAdaptColorSwitch(coordinator, entry),
             MimickSleepSwitch(coordinator, entry),
+            MimickDebugLoggingSwitch(coordinator, entry),
         ]
     )
 
@@ -90,6 +92,7 @@ class MimickMasterSwitch(MimickBaseSwitch):
             "weather_entity": self.coordinator.weather_entity,
             ATTR_MANUAL_CONTROL: manual_lights,
             "sleep_mode": self.coordinator.is_sleep_mode,
+            "debug_logging": self.coordinator.debug_logging,
         }
 
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -174,3 +177,29 @@ class MimickSleepSwitch(MimickBaseSwitch):
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off sleep mode."""
         self.coordinator.set_sleep_mode(False)
+
+
+class MimickDebugLoggingSwitch(MimickBaseSwitch):
+    """Diagnostic switch to toggle per-light algorithm input/output logging."""
+
+    _attr_icon = "mdi:bug-outline"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: MimickCoordinator, entry: ConfigEntry) -> None:
+        """Initialize debug logging switch."""
+        super().__init__(coordinator, entry)
+        self._attr_name = "Debug Logging"
+        self._attr_unique_id = f"{entry.entry_id}_debug_logging"
+
+    @property
+    def is_on(self) -> bool:
+        """Return True if algorithm logging is enabled."""
+        return self.coordinator.debug_logging
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn on algorithm logging."""
+        self.coordinator.set_debug_logging(True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn off algorithm logging."""
+        self.coordinator.set_debug_logging(False)

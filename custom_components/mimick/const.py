@@ -31,6 +31,7 @@ CONF_WEATHER_INFLUENCE = "weather_influence"
 
 CONF_MANUAL_CONTROL_TIMEOUT = "manual_control_timeout"
 CONF_LIGHT_OVERRIDES = "light_overrides"
+CONF_DEBUG_LOGGING = "debug_logging"
 
 # Light override sub-keys
 ATTR_OVERRIDE_ENABLED = "override_enabled"
@@ -52,6 +53,7 @@ DEFAULT_SUN_ELEVATION_MAX = 64.0  # Approximate peak solar elevation
 DEFAULT_SLEEP_BRIGHTNESS = 10
 DEFAULT_SLEEP_KELVIN = 2000
 DEFAULT_MANUAL_CONTROL_TIMEOUT = 60  # Minutes (0 = until light turns off and on)
+DEFAULT_DEBUG_LOGGING = False
 
 # Service and attribute constants
 ATTR_FACTOR = "solar_factor"

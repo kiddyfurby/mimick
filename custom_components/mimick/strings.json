@@ -19,7 +19,8 @@
           "sleep_brightness": "Sleep Mode Brightness (%)",
           "sleep_kelvin": "Sleep Mode Color Temperature (Kelvin)",
           "weather_entity": "Weather / Cloud Entity (Optional)",
-          "weather_influence": "Daytime Weather Modulation Influence (%)"
+          "weather_influence": "Daytime Weather Modulation Influence (%)",
+          "debug_logging": "Enable Algorithm Input/Output Logging"
         }
       }
     },
@@ -53,7 +54,8 @@
           "sleep_brightness": "Sleep Mode Brightness (%)",
           "sleep_kelvin": "Sleep Mode Color Temperature (Kelvin)",
           "weather_entity": "Weather / Cloud Entity (Optional)",
-          "weather_influence": "Daytime Weather Modulation Influence (%)"
+          "weather_influence": "Daytime Weather Modulation Influence (%)",
+          "debug_logging": "Enable Algorithm Input/Output Logging"
         }
       },
       "light_overrides": {

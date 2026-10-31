@@ -17,6 +17,7 @@ from .const import (
     ATTR_SELECTED_LIGHT,
     CONF_ADAPT_BRIGHTNESS,
     CONF_ADAPT_COLOR,
+    CONF_DEBUG_LOGGING,
     CONF_INTERVAL,
     CONF_LIGHT_OVERRIDES,
     CONF_LIGHTS,
@@ -33,6 +34,7 @@ from .const import (
     CONF_WEATHER_INFLUENCE,
     DEFAULT_ADAPT_BRIGHTNESS,
     DEFAULT_ADAPT_COLOR,
+    DEFAULT_DEBUG_LOGGING,
     DEFAULT_INTERVAL,
     DEFAULT_MAX_BRIGHTNESS,
     DEFAULT_MAX_KELVIN,
@@ -108,6 +110,7 @@ class MimickConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Optional(CONF_WEATHER_INFLUENCE, default=DEFAULT_WEATHER_INFLUENCE): selector.NumberSelector(
                     selector.NumberSelectorConfig(min=0, max=100, step=5, mode=selector.NumberSelectorMode.SLIDER, unit_of_measurement="%")
                 ),
+                vol.Optional(CONF_DEBUG_LOGGING, default=DEFAULT_DEBUG_LOGGING): selector.BooleanSelector(),
             }
         )
 
@@ -233,6 +236,10 @@ class MimickOptionsFlowHandler(config_entries.OptionsFlow):
                 ): selector.NumberSelector(
                     selector.NumberSelectorConfig(min=0, max=100, step=5, mode=selector.NumberSelectorMode.SLIDER, unit_of_measurement="%")
                 ),
+                vol.Optional(
+                    CONF_DEBUG_LOGGING,
+                    default=self._get_current(CONF_DEBUG_LOGGING, DEFAULT_DEBUG_LOGGING),
+                ): selector.BooleanSelector(),
             }
         )
 
