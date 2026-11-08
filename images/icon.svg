@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background rounded rectangle gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#121624" />
+      <stop offset="50%" stop-color="#0d111a" />
+      <stop offset="100%" stop-color="#080a10" />
+    </linearGradient>
+
+    <!-- Border gradient subtle glow -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.5" />
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.5" />
+    </linearGradient>
+
+    <!-- Beam 1: Left daylight blue pillar -->
+    <linearGradient id="leftBeam" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="60%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#bae6fd" />
+    </linearGradient>
+
+    <!-- Beam 2: Center-left chevron transitioning blue to midday white -->
+    <linearGradient id="midLeftBeam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#bae6fd" />
+      <stop offset="50%" stop-color="#e0f2fe" />
+      <stop offset="100%" stop-color="#fef3c7" />
+    </linearGradient>
+
+    <!-- Beam 3: Center-right chevron transitioning midday white to amber -->
+    <linearGradient id="midRightBeam" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fef3c7" />
+      <stop offset="50%" stop-color="#fcd34d" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+
+    <!-- Beam 4: Right evening warm candlelight amber pillar -->
+    <linearGradient id="rightBeam" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="60%" stop-color="#ea580c" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+
+    <!-- Ambient glow for sun/midday apex -->
+    <radialGradient id="sunGlow" cx="50%" cy="32%" r="40%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25" />
+      <stop offset="35%" stop-color="#38bdf8" stop-opacity="0.15" />
+      <stop offset="70%" stop-color="#f59e0b" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Horizon circadian arc gradient -->
+    <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.1" />
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.1" />
+    </linearGradient>
+
+    <!-- Drop shadow for the M crest -->
+    <filter id="glowShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="ambientBlur" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="24" />
+    </filter>
+  </defs>
+
+  <!-- Container Box with squircle corner radius -->
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#bgGrad)" stroke="url(#borderGrad)" stroke-width="4" />
+
+  <!-- Ambient light wash -->
+  <circle cx="256" cy="220" r="180" fill="url(#sunGlow)" />
+
+  <!-- Subtle Circadian Horizon Arc in the background -->
+  <path d="M 96 360 C 176 160, 336 160, 416 360" fill="none" stroke="url(#arcGrad)" stroke-width="3" stroke-dasharray="6 8" stroke-linecap="round" opacity="0.6" />
+
+  <!-- Apex Solar Pip (Solar Noon / Mimic Peak) -->
+  <circle cx="256" cy="168" r="8" fill="#ffffff" filter="url(#glowShadow)" />
+  <circle cx="256" cy="168" r="16" fill="#ffffff" opacity="0.25" />
+
+  <!-- Soft colored ambient bloom behind M beams -->
+  <g filter="url(#ambientBlur)" opacity="0.45">
+    <circle cx="140" cy="260" r="60" fill="#38bdf8" />
+    <circle cx="256" cy="290" r="50" fill="#fef08a" />
+    <circle cx="372" cy="260" r="60" fill="#ea580c" />
+  </g>
+
+  <!-- Stylized Geometric "M" Beams -->
+  <g filter="url(#glowShadow)">
+    <!-- Left outer beam: Crisp daylight (6500K) -->
+    <path d="M 124 360 L 124 186 C 124 168 144 158 158 170 L 210 214 C 218 221 224 231 224 242 L 224 360 C 224 368 217 375 209 375 L 139 375 C 131 375 124 368 124 360 Z"
+          fill="url(#leftBeam)" />
+
+    <!-- Center left diagonal beam: Daylight to midday curve -->
+    <path d="M 196 182 L 243 286 C 248 297 264 297 269 286 L 316 182 C 323 166 308 150 292 158 L 256 176 L 220 158 C 204 150 189 166 196 182 Z"
+          fill="url(#midLeftBeam)" />
+
+    <!-- Center apex facet highlight -->
+    <path d="M 256 176 L 274 278 C 270 286 260 292 256 292 C 252 292 242 286 238 278 Z"
+          fill="url(#midRightBeam)" opacity="0.85" />
+
+    <!-- Right outer beam: Warm candle amber (2200K) -->
+    <path d="M 388 360 L 388 186 C 388 168 368 158 354 170 L 302 214 C 294 221 288 231 288 242 L 288 360 C 288 368 295 375 303 375 L 373 375 C 381 375 388 368 388 360 Z"
+          fill="url(#rightBeam)" />
+  </g>
+
+  <!-- Clean precision overlay facets on the "M" crest -->
+  <g opacity="0.9">
+    <!-- Left inner facet -->
+    <path d="M 148 182 L 212 236 L 212 355 L 148 355 Z" fill="#ffffff" opacity="0.12" />
+    <!-- Right inner facet -->
+    <path d="M 364 182 L 300 236 L 300 355 L 364 355 Z" fill="#ffffff" opacity="0.08" />
+  </g>
+
+  <!-- Bottom Ratchet / Foundation Accent: Freewheel Catch-up Indicator line -->
+  <g transform="translate(186, 404)">
+    <rect x="0" y="0" width="140" height="4" rx="2" fill="url(#arcGrad)" opacity="0.4" />
+    <!-- Small centered chevron indicating synchronization / ratchet -->
+    <path d="M 64 -3 L 70 3 L 76 -3" fill="none" stroke="#fef08a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.8" />
+  </g>
+</svg>

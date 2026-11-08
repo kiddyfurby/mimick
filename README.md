@@ -1,11 +1,19 @@
-# Mimick
+<p align="center">
+  <img src="images/icon.png" alt="Mimick Logo" width="160" height="160">
+</p>
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/default)
-[![Version](https://img.shields.io/badge/version-0.1.0-green.svg)](https://github.com/kiddyfurby/mimick/releases)
-[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1%2B-blue.svg)](https://www.home-assistant.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<h1 align="center">Mimick</h1>
 
-A lean, robust, and highly customizable circadian lighting integration for [Home Assistant](https://www.home-assistant.io/).
+<p align="center">
+  <a href="https://github.com/hacs/default"><img src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg" alt="hacs_badge"></a>
+  <a href="https://github.com/kiddyfurby/mimick/releases"><img src="https://img.shields.io/badge/version-0.1.0-green.svg" alt="Version"></a>
+  <a href="https://www.home-assistant.io/"><img src="https://img.shields.io/badge/Home%20Assistant-2024.1%2B-blue.svg" alt="Home Assistant"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+</p>
+
+<p align="center">
+  <b>A lean, robust, and highly customizable circadian lighting integration for Home Assistant.</b>
+</p>
 
 ---
 
